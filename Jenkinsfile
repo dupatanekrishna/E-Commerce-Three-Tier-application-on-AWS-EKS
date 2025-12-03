@@ -1,29 +1,33 @@
-// In file: /Users/dupatane/E-Commerce-Three-Tier-application-on-AWS-EKS/Jenkinsfile
+// Jenkinsfile in your E-Commerce-Three-Tier-application-on-AWS-EKS repo
 
 pipeline {
     agent any 
-    tools {
-        // Name must match what you configured in Global Tool Configuration
-        SonarRunner 'SonarScannerCLI'
-    }
-    
+
     stages {
         stage('Checkout Code') {
             steps {
-                // This step is automatically handled by "Pipeline script from SCM" 
-                // in Jenkins, which clones the project into the workspace.
                 echo "Cloning/Checking out ${env.JOB_NAME}..."
+                // SCM checkout is already done by "Pipeline script from SCM"
             }
         }
         
         stage('SonarQube Analysis') {
             steps {
-                // 'SonarQube' must match the server name configured in Configure System
-                withSonarQubeEnv('SonarQube') { 
-                    // Set the token login explicitly using the specific token ID
-                    // This uses the Project Analysis Token you created.
-                    withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN_SECRET')]) {
-                        sh "sonar-scanner -Dsonar.login=${SONAR_TOKEN_SECRET}" 
+                script {
+                    // Name must match "Manage Jenkins → Global Tool Configuration → SonarQube Scanner"
+                    def scannerHome = tool 'SonarScannerCLI'
+
+                    // Name must match "Manage Jenkins → Configure System → SonarQube servers"
+                    withSonarQubeEnv('SonarQube') {
+                        // Inject the SonarQube token stored in Jenkins credentials
+                        withCredentials([string(credentialsId: 'sonarqube-token', variable: 'SONAR_TOKEN_SECRET')]) {
+
+                            // Use shell expansion for the secret (no Groovy interpolation with ${})
+                            sh """
+                                "${scannerHome}/bin/sonar-scanner" \
+                                  -Dsonar.login=\$SONAR_TOKEN_SECRET
+                            """
+                        }
                     }
                 }
             }
@@ -32,8 +36,8 @@ pipeline {
         stage('Quality Gate Check') {
             steps {
                 timeout(time: 5, unit: 'MINUTES') {
-                    // Waits for the analysis to be processed by SonarQube
-                    waitForQualityGate abortPipeline: true 
+                    // Wait for SonarQube to process the analysis & return Quality Gate result
+                    waitForQualityGate abortPipeline: true
                 }
             }
         }
