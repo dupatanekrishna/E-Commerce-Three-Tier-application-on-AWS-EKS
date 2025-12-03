@@ -3,8 +3,10 @@
 pipeline {
     agent any 
     tools {
-    SonarQubeScanner 'SonarScannerCLI'
+        // Name must match what you configured in Global Tool Configuration
+        SonarRunner 'SonarScannerCLI'
     }
+    
     stages {
         stage('Checkout Code') {
             steps {
