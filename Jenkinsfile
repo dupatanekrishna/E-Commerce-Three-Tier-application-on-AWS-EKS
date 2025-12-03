@@ -2,10 +2,10 @@
 
 pipeline {
     agent any 
-    tools {
+    // tools {
         // Name must match what you configured in Global Tool Configuration
-        SonarRunner 'SonarScannerCLI'
-    }
+        // SonarRunner 'SonarScannerCLI'
+    // }
     
     stages {
         stage('Checkout Code') {
