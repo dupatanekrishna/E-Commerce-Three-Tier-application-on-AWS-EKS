@@ -8,7 +8,7 @@ Create an IAM role and attach a policy. AWS maintains an AWS managed policy or y
 eksctl create iamserviceaccount \
     --name ebs-csi-controller-sa \
     --namespace kube-system \
-    --cluster <YOUR-CLUSTER-NAME> \
+    --cluster project-eks \
     --role-name AmazonEKS_EBS_CSI_DriverRole \
     --role-only \
     --attach-policy-arn arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy \
@@ -18,7 +18,7 @@ eksctl create iamserviceaccount \
 Run the following command. Replace <AWS-ACCOUNT-ID> with the name of your cluster, <AWS-ACCOUNT-ID> with your account ID.
 
 ```
-eksctl create addon --name aws-ebs-csi-driver --cluster <YOUR-CLUSTER-NAME> --service-account-role-arn arn:aws:iam::<AWS-ACCOUNT-ID>:role/AmazonEKS_EBS_CSI_DriverRole --force
+eksctl create addon --name aws-ebs-csi-driver --cluster project-eks --service-account-role-arn arn:aws:iam::834422903718:role/AmazonEKS_EBS_CSI_DriverRole --force
 ```
 
 **Note**: If your cluster is in the AWS GovCloud (US-East) or AWS GovCloud (US-West) AWS Regions, then replace arn:aws: with arn:aws-us-gov:.
