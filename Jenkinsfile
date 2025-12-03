@@ -4,7 +4,7 @@ pipeline {
     agent any 
     tools {
         // Name must match what you configured in Global Tool Configuration
-        sonarRunner 'SonarScannerCLI' 
+        'hudson.plugins.sonar.SonarRunnerInstallation' 'SonarScannerCLI'
     }
     
     stages {
