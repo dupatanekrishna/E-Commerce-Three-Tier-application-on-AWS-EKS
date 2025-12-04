@@ -1,4 +1,6 @@
-// ...existing code...
+// Ensure server.js knows we are in test mode
+process.env.NODE_ENV = 'test';
+
 const request = require('supertest');
 const app = require('../server');
 

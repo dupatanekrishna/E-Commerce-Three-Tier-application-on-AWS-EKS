@@ -1,12 +1,22 @@
-// ...existing code...
-const instana = require('@instana/collector');
-// init tracing
-// MUST be done before loading anything else!
-instana({
+let instana;
+
+if (process.env.NODE_ENV !== 'test') {
+  // Normal runtime: enable Instana
+  instana = require('@instana/collector');
+  instana({
     tracing: {
-        enabled: true
+      enabled: true
     }
-});
+  });
+} else {
+  // Test mode: provide a no-op stub so middleware can still call currentSpan()
+  instana = {
+    currentSpan: () => ({
+      annotate: () => {}
+    })
+  };
+}
+
 
 const redis = require('redis');
 const request = require('request');
@@ -387,18 +397,39 @@ function saveCart(id, cart) {
     });
 }
 
-// connect to Redis
-var redisClient = redis.createClient({
-    host: redisHost
-});
+let redisClient;
 
-redisClient.on('error', (e) => {
+if (process.env.NODE_ENV !== 'test') {
+  // Normal runtime: real Redis
+  redisClient = redis.createClient({
+    host: redisHost
+  });
+
+  redisClient.on('error', (e) => {
     logger.error('Redis ERROR', e);
-});
-redisClient.on('ready', (r) => {
+  });
+  redisClient.on('ready', (r) => {
     logger.info('Redis READY', r);
     redisConnected = true;
-});
+  });
+} else {
+  // Test mode: simple in-memory fake Redis
+  const store = new Map();
+
+  redisClient = {
+    get: (key, cb) => cb(null, store.get(key) ?? null),
+    setex: (key, ttl, value, cb) => {
+      store.set(key, value);
+      cb(null, 'OK');
+    },
+    del: (key, cb) => {
+      const existed = store.delete(key);
+      cb(null, existed ? 1 : 0);
+    }
+  };
+
+  redisConnected = true;
+}
 
 // Only start the HTTP listener when run directly. This allows tests to require() this file
 // without the server binding to a port.
