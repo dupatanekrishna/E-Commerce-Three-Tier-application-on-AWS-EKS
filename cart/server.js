@@ -1,3 +1,4 @@
+// ...existing code...
 const instana = require('@instana/collector');
 // init tracing
 // MUST be done before loading anything else!
@@ -399,9 +400,15 @@ redisClient.on('ready', (r) => {
     redisConnected = true;
 });
 
-// fire it up!
-const port = process.env.CART_SERVER_PORT || '8080';
-app.listen(port, () => {
-    logger.info('Started on port', port);
-});
+// Only start the HTTP listener when run directly. This allows tests to require() this file
+// without the server binding to a port.
+if (require.main === module) {
+    const port = process.env.CART_SERVER_PORT || '8080';
+    app.listen(port, () => {
+        logger.info('Started on port', port);
+    });
+}
 
+// Export the app for tests (supertest/jest)
+module.exports = app;
+// ...existing code...
