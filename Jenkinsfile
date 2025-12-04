@@ -3,6 +3,10 @@
 pipeline {
     agent any 
 
+    tools {
+    nodejs 'NodeJS'   // <-- MUST match the tool name you configured
+  }
+
     stages {
         stage('Checkout Code') {
             steps {
